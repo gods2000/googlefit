@@ -82,10 +82,18 @@ public class MainActivity extends AppCompatActivity {
             endTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
         }
         ZonedDateTime startTime = endTime.minusWeeks(1);
-
         Log.i(TAG, "Range Start: $startTime");
         Log.i(TAG, "Range End: $endTime");
 
+        long startLongTime = System.currentTimeMillis() - 100000;
+        long endLongTime = System.currentTimeMillis();
+        SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String strStart = timeFormat.format(new Date(startLongTime));
+        String endStart = timeFormat.format(new Date(endLongTime));
+        Log.i(TAG, "Range Start: " +  startLongTime);
+        Log.i(TAG, "Range End: " + System.currentTimeMillis());
+        Log.i(TAG, "Str Start: " + strStart);
+        Log.i(TAG, "Str End: " + endStart);
         DataSource ESTIMATED_STEP_DELTAS = new DataSource.Builder()
                 .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
                 .setType(DataSource.TYPE_DERIVED)
@@ -96,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         DataReadRequest readRequest = new DataReadRequest.Builder()
                 .aggregate(ESTIMATED_STEP_DELTAS, DataType.AGGREGATE_STEP_COUNT_DELTA)
                 .bucketByTime(1, TimeUnit.DAYS)
-                .setTimeRange(startTime.toEpochSecond(), endTime.toEpochSecond(), TimeUnit.SECONDS)
+                .setTimeRange(startLongTime, System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .enableServerQueries()
                 .build();
 
