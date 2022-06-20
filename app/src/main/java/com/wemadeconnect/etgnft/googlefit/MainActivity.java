@@ -84,21 +84,16 @@ public class MainActivity extends AppCompatActivity {
 // Read the data that's been collected throughout the past week.
         List<String> theDates = new ArrayList<String>();
         List<Integer> totalAvgSteps = new ArrayList<Integer>();
-        ZonedDateTime endTime = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            endTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
-        }
-        ZonedDateTime startTime = endTime.minusWeeks(1);
-        Log.i(TAG, "Range Start: $startTime");
-        Log.i(TAG, "Range End: $endTime");
 
-        long startLongTime = System.currentTimeMillis() - 100000;
+        long startLongTime = loadTime();
+        //if(startLongTime == 0) {
+            startLongTime = System.currentTimeMillis() - 1000000000;
+            saveNowTime(true);
+        //}
         long endLongTime = System.currentTimeMillis();
         SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         String strStart = timeFormat.format(new Date(startLongTime));
         String endStart = timeFormat.format(new Date(endLongTime));
-        Log.i(TAG, "Range Start: " +  startLongTime);
-        Log.i(TAG, "Range End: " + System.currentTimeMillis());
         Log.i(TAG, "Str Start: " + strStart);
         Log.i(TAG, "Str End: " + endStart);
         DataSource ESTIMATED_STEP_DELTAS = new DataSource.Builder()
@@ -134,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
                         SimpleDateFormat df = new SimpleDateFormat("EEE");
                         String weekday = df.format(stepsDate);
 
-                        Log.i(TAG, stepsDate.toString());
+                        Log.i(TAG,"StepsDate = " +  stepsDate.toString());
                         theDates.add(weekday);
 
                         for (DataSet dataSet : bucket.getDataSets()) {
@@ -163,7 +158,6 @@ public class MainActivity extends AppCompatActivity {
                 totalSteps += dp.getValue(field).asInt();
 
                 Log.i(TAG, "\tfield: " + fieldName + "value: " + dp.getValue(field));
-
             }
         }
         return totalSteps;
@@ -197,13 +191,14 @@ public class MainActivity extends AppCompatActivity {
                         });
     }
 
-    private void saveNowTime() {
+    private void saveNowTime(Boolean bReset) {
         long nowTime = System.currentTimeMillis();
-        String fileName = "Time.txt";
-
+        if(bReset)
+            nowTime = 0;
         try {
-            FileOutputStream os = openFileOutput(fileName,MODE_PRIVATE);
+            FileOutputStream os = openFileOutput("Time.txt",MODE_PRIVATE);
             os.write((String.valueOf(nowTime)).getBytes());
+            Log.i(TAG, "Save Time = " + (String.valueOf(nowTime)));
             os.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -211,15 +206,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private long loadTime() {
-        String fileName = "Time.txt";
         try {
-            FileInputStream fis = new FileInputStream(fileName);
+            FileInputStream fis = openFileInput("Time.txt");
             byte[] buf = new byte[1024];
-
             int nRLen = fis.read(buf);
             String strBuff = new String(buf,0,nRLen);
             Log.i(TAG, "Load Time = " + strBuff);
             fis.close();
+
+            return Long.parseLong(strBuff);
 
         } catch (Exception e) {
             Log.i(TAG, "Not exist file");
@@ -241,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         Log.i(TAG, "onPause");
-        saveNowTime();
+        saveNowTime(false);
     }
 
     @Override
@@ -254,6 +249,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         Log.i(TAG, "onStart");
+
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.i(TAG, "onRestart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume");
         GoogleFitPermissionCheck();
     }
 }
