@@ -31,6 +31,9 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -53,15 +56,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         GoogleFitnessInit();
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
-            GoogleSignIn.requestPermissions(
-                    this,
-                    REQUEST_OAUTH_REQUEST_CODE,
-                    GoogleSignIn.getLastSignedInAccount(this),
-                    fitnessOptions);
-        } else {
-            subscribe();
-        }
+
     }
 
     private void GoogleFitnessInit() {
@@ -71,6 +66,18 @@ public class MainActivity extends AppCompatActivity {
                         .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                         .addDataType(DataType.TYPE_LOCATION_SAMPLE, FitnessOptions.ACCESS_READ)
                         .build();
+    }
+
+    private void GoogleFitPermissionCheck() {
+        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
+            GoogleSignIn.requestPermissions(
+                    this,
+                    REQUEST_OAUTH_REQUEST_CODE,
+                    GoogleSignIn.getLastSignedInAccount(this),
+                    fitnessOptions);
+        } else {
+            subscribe();
+        }
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void subscribe() {
@@ -189,6 +196,36 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
     }
+
+    private void saveNowTime() {
+        long nowTime = System.currentTimeMillis();
+        String fileName = "Time.txt";
+
+        try {
+            FileOutputStream os = openFileOutput(fileName,MODE_PRIVATE);
+            os.write((String.valueOf(nowTime)).getBytes());
+            os.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private long loadTime() {
+        String fileName = "Time.txt";
+        try {
+            FileInputStream fis = new FileInputStream(fileName);
+            byte[] buf = new byte[1024];
+
+            int nRLen = fis.read(buf);
+            String strBuff = new String(buf,0,nRLen);
+            Log.i(TAG, "Load Time = " + strBuff);
+            fis.close();
+
+        } catch (Exception e) {
+            Log.i(TAG, "Not exist file");
+        }
+        return 0;
+    }
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -198,5 +235,25 @@ public class MainActivity extends AppCompatActivity {
                 subscribe();
             }
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i(TAG, "onPause");
+        saveNowTime();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i(TAG, "onStop");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart");
+        GoogleFitPermissionCheck();
     }
 }
