@@ -13,8 +13,19 @@ public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i(TAG, "BootReceiver onReceive");
-        if(intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            mainActivity.startForegroundService();
+        if(intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
+            Intent boot_intent = new Intent(context,MyService.class);
+            boot_intent.setAction("startForeground");
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(boot_intent);
+            } else {
+                context.startService(boot_intent);
+            }
+
+            mainActivity.rebootSensorManager(context);
+
+        } else {
+            Log.i(TAG, "Not Equal");
         }
     }
 }

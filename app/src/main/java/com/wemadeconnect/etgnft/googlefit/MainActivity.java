@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     public static final String TAG = "StepCounter";
-    
+
     private SensorManager sensorManager;
     private Sensor stepCountSensor;
     TextView tvStepCount;
@@ -79,19 +79,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if(stepCountSensor == null) {
             Toast.makeText(this,"No Step Detect Sensor",Toast.LENGTH_SHORT).show();
         } else {
-            startForegroundService();
+            onForegroundService();
             Toast.makeText(this,"Start ForeGround Service",Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void startForegroundService() {
+    public void onForegroundService() {
+        Log.i(TAG, "onForegroundService");
         Intent intent = new Intent(this,MyService.class);
+        Log.i(TAG, "onForegroundService22");
         intent.setAction("startForeground");
+        Log.i(TAG, "onForegroundService33");
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.i(TAG, "onForegroundService44");
             startForegroundService(intent);
+            Log.i(TAG, "onForegroundService55");
         } else {
             startService(intent);
         }
+        Log.i(TAG, "onForegroundService");
     }
 
 //    public void onStartForegroundService(View view) {
@@ -293,6 +299,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy");
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         Log.i(TAG, "onStart");
@@ -318,7 +330,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent event) {
         if(event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
-            tvStepCount.setText("Step Count : " + String.valueOf(event.values[0]));
+            if(tvStepCount != null)
+                tvStepCount.setText("Step Count : " + String.valueOf(event.values[0]));
             Log.i(TAG, "Step Count : " + String.valueOf(event.values[0]));
         }
     }
@@ -332,5 +345,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         SharedPreferences sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor =  sharedPreferences.edit();
         //editor.putInt("step",)
+    }
+
+    public void rebootSensorManager(Context context) {
+        sensorManager = (SensorManager)context.getSystemService(context.SENSOR_SERVICE);
+        stepCountSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        if(stepCountSensor == null) {
+            Log.i(TAG, "stepCountSensor null");
+        } else {
+            Log.i(TAG, "stepCountSensor register");
+            sensorManager.registerListener(this,stepCountSensor,SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 }
