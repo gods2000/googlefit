@@ -58,9 +58,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     public static final String TAG = "StepCounter";
-//    private static final int REQUEST_OAUTH_REQUEST_CODE = 0x1001;
-//    private FitnessOptions fitnessOptions;
-
+    
     private SensorManager sensorManager;
     private Sensor stepCountSensor;
     TextView tvStepCount;
@@ -80,10 +78,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         stepCountSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         if(stepCountSensor == null) {
             Toast.makeText(this,"No Step Detect Sensor",Toast.LENGTH_SHORT).show();
+        } else {
+            startForegroundService();
+            Toast.makeText(this,"Start ForeGround Service",Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void onStartForegroundService(View view) {
+    public void startForegroundService() {
         Intent intent = new Intent(this,MyService.class);
         intent.setAction("startForeground");
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -92,6 +93,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             startService(intent);
         }
     }
+
+//    public void onStartForegroundService(View view) {
+//        Intent intent = new Intent(this,MyService.class);
+//        intent.setAction("startForeground");
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(intent);
+//        } else {
+//            startService(intent);
+//        }
+//    }
 //
 //    private void GoogleFitnessInit() {
 //        fitnessOptions =

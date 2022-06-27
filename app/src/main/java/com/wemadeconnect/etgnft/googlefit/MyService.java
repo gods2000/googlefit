@@ -40,8 +40,8 @@ public class MyService extends Service {
     private void startForegroundService() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this,"default");
         builder.setSmallIcon(R.mipmap.ic_launcher);
-        builder.setContentTitle("포그라운드 서비스");
-        builder.setContentText("포그라운드 서비스 실행 중");
+        builder.setContentTitle("스텝수 측정 중");
+        builder.setContentText("백그라운드에서 사용자의 ");
 
         Intent notificationIntent = new Intent(this,MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,0,notificationIntent,PendingIntent.FLAG_IMMUTABLE);
