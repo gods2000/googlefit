@@ -63,17 +63,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor stepCountSensor;
     TextView tvStepCount;
 
+    private String NOW_STEP_KEY = "now_step";
+    private String BACK_STEP_KEY = "back_step";
     private float nowStep = 0;
     private float backStep = 0;  //백그라운드 일때 스텝
     private boolean isBack = false;
-
+    private SharedPreferences sharedPreferences;
     public boolean bReBoot = false;
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        sharedPreferences = getSharedPreferences("myPrefs", MODE_PRIVATE);
         tvStepCount = (TextView) findViewById(R.id.tvStepCount);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         stepCountSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onPause();
         Log.i(TAG, "onPause");
         isBack = true;
-        saveData(nowStep);
+        saveData(nowStep,NOW_STEP_KEY);
         //sensorManager.unregisterListener(this);
     }
 
@@ -152,6 +154,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             if(isBack) {
                 backStep = event.values[0] - nowStep;
+                if(backStep % 10 == 0) {
+                    saveData(backStep,BACK_STEP_KEY);
+                }
             } else {
                 nowStep = event.values[0];
             }
@@ -167,16 +172,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    private void saveData(float step_value) {
-        SharedPreferences sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+    private void saveData(float stepValue,String keyValue) {
         SharedPreferences.Editor editor =  sharedPreferences.edit();
-        editor.putFloat("now_step",step_value);
+        editor.putFloat(keyValue,stepValue);
         editor.commit();
     }
 
-    private float loadData() {
-        SharedPreferences sharedPreferences= getSharedPreferences("myPrefs", MODE_PRIVATE);
-        return sharedPreferences.getFloat("now_step",0);
+    private float loadData(String keyValue) {
+        return sharedPreferences.getFloat(keyValue,0);
     }
 
     public void rebootSensorManager(Context context) {
