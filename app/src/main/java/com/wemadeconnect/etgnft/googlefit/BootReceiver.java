@@ -23,7 +23,6 @@ public class BootReceiver extends BroadcastReceiver {
             }
 
             mainActivity.rebootSensorManager(context);
-
         } else {
             Log.i(TAG, "Not Equal");
         }
